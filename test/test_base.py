@@ -20,7 +20,6 @@ class TestBase(unittest.TestCase):
         self.assertEqual(max(res), 81)
         
 
-
 def main():
     unittest.main()
 

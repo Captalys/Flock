@@ -2,13 +2,14 @@ import sys
 import dill
 from multiprocessing import Process, Pipe, Pool, Manager, Queue, Value, get_context
 from multiprocessing.managers import BaseManager
+from flock.base.database import SqlCon
 
 class BaseMultiProc(object):
     """Documentation for BaseMultiProc
 
     """
 
-    def __init__(self, poolSize=10, timeOutError=5):
+    def __init__(self, poolSize=5, timeOutError=5):
         self.poolSize = poolSize
         self.timeOutError = timeOutError
         self.results = []
@@ -34,8 +35,10 @@ class BaseMultiProc(object):
         return pool.apply_async(cls.dillEncoded, (payload,), callback=callback)
     
     def computeFunc(self, childCon, function, iterator):
+
         ctx = get_context("spawn")
         pool = ctx.Pool(self.poolSize)
+
         localQueue = []
         for it in iterator:
             asyncRes = self.customApplyAsync(pool, function, args=(it,), callback=self.getResults)
@@ -55,3 +58,21 @@ class BaseMultiProc(object):
         res = parentCon.recv()
         parentProcess.join()
         return res
+
+
+# def funcHelper1(a):
+#     from flock.base.database import SqlCon
+#     try:
+#         engine = SqlCon.mysql_engine("varejo")
+#         conn = engine.connect()
+#         b = (a ** 2)
+#         return b
+#     except Exception as e:
+#         raise e
+    
+# if __name__ == '__main__':
+#     bp = BaseMultiProc()
+#     iterator = list(range(100))
+#     res = bp.executeAsync(funcHelper1, iterator)
+#     print(res)
+        
