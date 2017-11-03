@@ -1,8 +1,7 @@
 import sys
 import dill
-from multiprocessing import Process, Pipe, Pool, Manager, Queue, Value, get_context
+from multiprocessing import Process, Pipe, Pool, get_context
 from multiprocessing.managers import BaseManager
-from flock.base.database import SqlCon
 
 class BaseMultiProc(object):
     """Documentation for BaseMultiProc
