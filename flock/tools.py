@@ -1,5 +1,6 @@
 from numpy import array_split
 
+
 def split_chunks(objc, _type, size=100):
 
     if _type == "dataframe":
