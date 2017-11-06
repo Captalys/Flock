@@ -3,7 +3,7 @@ from flock.tools import split_chunks
 from pandas import concat
 
 
-class DataframeAsync(object):
+class DataFrameAsync(object):
 
     def __init__(self, poolSize=5, poolSizeRows=10):
         self.function = None
