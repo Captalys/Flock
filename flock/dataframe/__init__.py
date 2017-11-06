@@ -5,32 +5,31 @@ from pandas import concat
 
 class DataFrameAsync(object):
 
-    def __init__(self, poolSize=5, poolSizeRows=10):
-        self.function = None
-        self.poolSize = poolSize
-        self.poolSizeRows = poolSizeRows
-
-    def applyInRows(self, block_df):
+    @classmethod
+    def applyInRows(cls, args):
+        func, block_df = args
         _df2 = block_df.copy()
         list_rows = []
 
         for i in range(len(_df2)):
             list_rows.append(_df2.iloc[i:i+1])
 
-        bp2 = BaseMultiProc(poolSize=self.poolSizeRows)
-        res2 = bp2.executeAsync(self.function, list_rows)
+        bp2 = BaseMultiProc()
+        res2 = bp2.executeAsync(func, list_rows)
         res2 = concat(res2)
         return res2
 
-    def apply(self, dataframe, function, style="row-like", chunksize=100):
+    @classmethod
+    def apply(cls, dataframe, function, style="row-like",
+              chunksize=100, poolSize=5):
         _df = dataframe.copy()
         iterator = split_chunks(_df, _type="dataframe", size=chunksize)
 
-        bp = BaseMultiProc(poolSize=self.poolSize)
+        bp = BaseMultiProc(poolSize=poolSize)
 
         if style == "row-like":
-            self.function = function
-            res = bp.executeAsync(self.applyInRows, iterator)
+            iterator = [(function, el) for el in iterator]
+            res = bp.executeAsync(cls.applyInRows, iterator)
 
         elif style == "block-like":
             res = bp.executeAsync(function, iterator)
