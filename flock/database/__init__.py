@@ -98,19 +98,3 @@ class DatabaseSetup(object):
         self.name = name
         self.server = server
         self.parameters = parameters
-
-
-
-
-class Inst(object):
-
-    def run(self, val, sql_con=None, mysql_con=None):
-        return "CHEGUEI INSTANCIADO RAPA"
-
-
-if __name__ == '__main__':
-    dbSetup = DatabaseSetup()
-    dbAsync = DatabaseAsync(setups=dbSetup)
-    inputs = [(el,) for el in range(10)]
-    res = dbAsync.apply(Inst().run, inputs)
-    print(res)
