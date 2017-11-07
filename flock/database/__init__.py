@@ -1,30 +1,30 @@
 from multiprocessing import Process, Queue, JoinableQueue
-from config import getDatabases
+from abc import ABCMeta, abstractproperty
 
 
 class Executor(Process):
 
-    def __init__(self, taskQueue, resultQueue, dictCon=None):
+    def __init__(self, taskQueue, resultQueue, databaseSetup):
         super(Executor, self).__init__()
         self.taskQueue = taskQueue
         self.resultQueue = resultQueue
-        self.dictCon = dictCon
-
-    def getConnection(self, connectionName):
-        if connectionName is None:
-            func = None
-        else:
-            databases = getDatabases()
-            func = databases.get(connectionName, None)
-        return func
+        self.databaseSetup = databaseSetup
 
     def run(self):
         # setting up the environment
         kwargs = {}
-        if self.dictCon is not None:
-            for key in self.dictCon:
-                con = self.getConnection(self.dictCon.get(key, None))()
-                kwargs[key] = con
+        if self.databaseSetup is not None:
+
+            if not isinstance(self.databaseSetup, list):
+                self.databaseSetup = [self.databaseSetup]
+
+            for inst in self.databaseSetup:
+                dbPar = inst.parameters
+                parName = inst.name
+                con = inst.server(**dbPar)
+                kwargs[parName] = con
+
+            print("Alive", con)
 
         while True:
             function, args = self.taskQueue.get()
@@ -42,17 +42,18 @@ class Executor(Process):
 
 class DatabaseAsync(object):
 
-    def __init__(self, numProcesses=5):
+    def __init__(self, setups=None, numProcesses=5):
         self.numProcesses = numProcesses
+        self.setups = setups
 
-    def apply(self, function, iterator, dictCon=None):
+    def apply(self, function, iterator):
 
         tasks = JoinableQueue()
         results = Queue()
 
         listExSize = min(self.numProcesses, len(iterator))
 
-        executors = [Executor(tasks, results, dictCon) for _ in range(listExSize)]
+        executors = [Executor(tasks, results, self.setups) for _ in range(listExSize)]
 
         for ex in executors:
             ex.start()
@@ -76,18 +77,40 @@ class DatabaseAsync(object):
         return res
 
 
+class BaseDatabaseSetup(metaclass=ABCMeta):
+
+    @abstractproperty
+    def name(self):
+        return None
+
+    @abstractproperty
+    def server(self):
+        return None
+
+    @abstractproperty
+    def parameters(self):
+        return None
+
+
+class DatabaseSetup(object):
+
+    def __init__(self, name, server, parameters):
+        self.name = name
+        self.server = server
+        self.parameters = parameters
+
+
+
+
 class Inst(object):
 
-    def run(self, val):
+    def run(self, val, sql_con=None, mysql_con=None):
         return "CHEGUEI INSTANCIADO RAPA"
 
 
 if __name__ == '__main__':
-    dbAsync = DatabaseAsync()
-    # dictCon = {"sql": {"varName": "sql_con", "parameters": ["schema"]},
-    #            "mysql": {"varName": "mysql_con", "parameters": ["schema", "table"]}}
-    dictCon = {"sql_con": "sql",
-               "mysql_con": "mysql"}
+    dbSetup = DatabaseSetup()
+    dbAsync = DatabaseAsync(setups=dbSetup)
     inputs = [(el,) for el in range(10)]
     res = dbAsync.apply(Inst().run, inputs)
     print(res)
