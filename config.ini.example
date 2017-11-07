@@ -1,0 +1,4 @@
+[database]
+cassandra = weddell.database.cassandra.CassandraCon.connect
+sql_server = weddell.database.sql.SqlCon.sql_connection
+mysql_server = weddell.database.sql.SqlCon.mysql_connection

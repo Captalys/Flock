@@ -1,5 +1,5 @@
 from multiprocessing import Process, Queue, JoinableQueue
-from weddell.database.sql import SqlCon
+from config import getDatabases
 
 
 class Executor(Process):
@@ -14,9 +14,8 @@ class Executor(Process):
         if connectionName is None:
             func = None
         else:
-            conns = {"sql": SqlCon.sql_connection,
-                     "mysql": SqlCon.mysql_connection}
-            func = conns.get(connectionName, None)
+            databases = getDatabases()
+            func = databases.get(connectionName, None)
         return func
 
     def run(self):
