@@ -24,8 +24,6 @@ class Executor(Process):
                 con = inst.server(**dbPar)
                 kwargs[parName] = con
 
-            print("Alive", con)
-
         while True:
             function, args = self.taskQueue.get()
 
