@@ -15,9 +15,15 @@ from multiprocessing.pool import Pool
 
 class NoDaemonProcess(Process):
     """
-    TODO: Docstring completa da classe
+    :class:`NoDaemonProcess` is that ensure the process' daemon flag is false.
+    
+    When a process exits, it attempts to terminate all of its daemonic child processes.
+    
+    It inheritates the Process method from `multiprocessing`
+    Parameters:
+        Process: method inherited from `multiprocessing` package
     """
-    # make 'daemon' attribute always return False
+   
     def _get_daemon(self):
         return False
 
@@ -28,14 +34,21 @@ class NoDaemonProcess(Process):
 
 class FlockPool(Pool):
     """
-    TODO: Docstring completa da classe
+    :class:`FlockPool` inheritates the Pool method form `multiprocessing` package. It settles the pool size and
+    context that will be used to use the function asynchronally.
+        Parameters:
+        Pool: method inherited from `multiprocessing` package
     """
     Process = NoDaemonProcess
 
 
 class BaseMultiProc(object):
     """
-    TODO: Docstring completa da classe
+    :class:`BaseMultiProc` is a class to apply and manage multiprocessing tasks within fucntions.
+    Parameters:
+        poolSize: amount of resources set to be processed the same time (`default` = 5)\n
+        timeOutError:  degree of tolerance for waiting a process to end (`default` = 50)\n
+        context: way of starting a process (depends os the platform). It can be "spawn", "fork" or "forkserver" (`default`="spawn")
     """
 
     def __init__(self, poolSize=5, timeOutError=50, context="spawn"):
@@ -46,13 +59,17 @@ class BaseMultiProc(object):
 
     def getResults(self, result):
         """
-        TODO: Docstring completa do metodo
+        :func:`getResults` append results obtained from functions asynchronally.
+        Parameters: 
+            result: results calculated from the function
         """
         self.results.append(result)
 
     def logErrors(self, localQueue):
         """
-        TODO: Docstring completa do metodo
+        :func:`logErrors` takes as argument the queue to be processed and assess if the process has timed-out
+        Parameters:
+            localQueue: list of process to be executed 
         """
         for asyncRes in localQueue:
             try:
@@ -64,7 +81,9 @@ class BaseMultiProc(object):
     @classmethod
     def dillEncoded(cls, payload):
         """
-        TODO: Docstring completa do metodo
+        :func:`dillEncoded` encodes the already serialized `function` and `argument`
+        Parameter:
+            payload: serialized function and argument
         """
         fun, args = dill.loads(payload)
         return fun(*args)
@@ -72,14 +91,24 @@ class BaseMultiProc(object):
     @classmethod
     def customApplyAsync(cls, pool, fun, args, callback):
         """
-        TODO: Docstring completa do metodo
+        :func:`customApplyAsync` 
+        Parameters:
+            pool: parameters such as poll size and context.
+            fun: a function in which is desired to be ran multiprocessed and asynchronally
+            args: variables to be applied to the function
+            callback: it called, if supplied, when the function is complete
         """
         payload = dill.dumps((fun, args))
         return pool.apply_async(cls.dillEncoded, (payload,), callback=callback)
 
     def computeFunc(self, childCon, function, iterator):
         """
-        TODO: Docstring completa do metodo
+        :func:`computeFunc` recieves the function and iterator used in :func:`executeAsync` together with an endpoint for the
+        processor. It calculates the results of the function, for each iterator and sets queue of process to be executed.
+        Parameters:
+            childCon: endpoint conection\n
+            function: a function in which is desired to be ran multiprocessed and asynchronally\n
+            iterator: variable in wich the function will be applied
         """
         pool = FlockPool(self.poolSize, context=get_context(self.context))
         localQueue = []
@@ -95,7 +124,12 @@ class BaseMultiProc(object):
 
     def executeAsync(self, function, iterator):
         """
-        TODO: Docstring completa do metodo
+        Method :func:`executeAsync` executes a function asynchronally, given a set of iterators.
+        Parameters:
+            function: a function in which is desired to be ran multiprocessed and asynchronally\n
+            iterator: variable in wich the function will be applied
+        
+        Returns the result of the function given a set of arguments of that function.
         """
         parentCon, childCon = Pipe()
         parentProcess = Process(target=self.computeFunc, args=(childCon, function,  iterator))
