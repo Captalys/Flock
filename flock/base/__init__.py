@@ -1,3 +1,12 @@
+"""
+.. module:: base
+   :platform: Unix, Windows
+   :synopsis: A useful module indeed.
+
+.. moduleauthor:: Wanderson Ferreira <wanderson.ferreira@captalys.com.br>
+
+
+"""
 import sys
 import dill
 from multiprocessing import Process, Pipe, get_context
@@ -5,6 +14,9 @@ from multiprocessing.pool import Pool
 
 
 class NoDaemonProcess(Process):
+    """
+    TODO: Docstring completa da classe
+    """
     # make 'daemon' attribute always return False
     def _get_daemon(self):
         return False
@@ -15,12 +27,15 @@ class NoDaemonProcess(Process):
 
 
 class FlockPool(Pool):
+    """
+    TODO: Docstring completa da classe
+    """
     Process = NoDaemonProcess
 
 
 class BaseMultiProc(object):
-    """Documentation for BaseMultiProc
-
+    """
+    TODO: Docstring completa da classe
     """
 
     def __init__(self, poolSize=5, timeOutError=50, context="spawn"):
@@ -30,9 +45,15 @@ class BaseMultiProc(object):
         self.results = []
 
     def getResults(self, result):
+        """
+        TODO: Docstring completa do metodo
+        """
         self.results.append(result)
 
     def logErrors(self, localQueue):
+        """
+        TODO: Docstring completa do metodo
+        """
         for asyncRes in localQueue:
             try:
                 retQ = asyncRes.get(timeout=self.timeOutError)
@@ -42,18 +63,25 @@ class BaseMultiProc(object):
 
     @classmethod
     def dillEncoded(cls, payload):
+        """
+        TODO: Docstring completa do metodo
+        """
         fun, args = dill.loads(payload)
         return fun(*args)
 
     @classmethod
     def customApplyAsync(cls, pool, fun, args, callback):
+        """
+        TODO: Docstring completa do metodo
+        """
         payload = dill.dumps((fun, args))
         return pool.apply_async(cls.dillEncoded, (payload,), callback=callback)
 
     def computeFunc(self, childCon, function, iterator):
-
+        """
+        TODO: Docstring completa do metodo
+        """
         pool = FlockPool(self.poolSize, context=get_context(self.context))
-
         localQueue = []
         for it in iterator:
             asyncRes = self.customApplyAsync(pool, function, args=(it,), callback=self.getResults)
@@ -66,6 +94,9 @@ class BaseMultiProc(object):
         childCon.send(self.results)
 
     def executeAsync(self, function, iterator):
+        """
+        TODO: Docstring completa do metodo
+        """
         parentCon, childCon = Pipe()
         parentProcess = Process(target=self.computeFunc, args=(childCon, function,  iterator))
         parentProcess.daemon = False
