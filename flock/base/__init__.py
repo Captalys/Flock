@@ -5,8 +5,8 @@
 
 .. moduleauthor:: Wanderson Ferreira <wanderson.ferreira@captalys.com.br>
 
-
 """
+
 import sys
 import dill
 from multiprocessing import Process, Pipe, get_context
