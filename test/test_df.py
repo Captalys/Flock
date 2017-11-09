@@ -11,7 +11,7 @@ class TestDataFrame(unittest.TestCase):
 
     def testDataFrame(self):
         df = DataFrame({"a": list(range(1000)), "b": list(range(1000, 2000))})
-        res = DataFrameAsync.apply(df, self.funcHelper1)
+        res = DataFrameAsync.apply(df, lambda x: x ** 2)
         self.assertEqual(res.shape[0], 1000)
         self.assertEqual(res.shape[1], 2)
 

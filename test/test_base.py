@@ -2,7 +2,6 @@ from flock.base import BaseMultiProc
 import unittest
 
 
-
 class TestBase(unittest.TestCase):
 
     def funcHelper1(self, a):
@@ -18,12 +17,11 @@ class TestBase(unittest.TestCase):
         res = bp.executeAsync(self.funcHelper1, iterator)
         self.assertEqual(len(res), 10)
         self.assertEqual(max(res), 81)
-        
+
 
 def main():
     unittest.main()
 
 
-    
 if __name__ == '__main__':
     main()

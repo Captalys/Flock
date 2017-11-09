@@ -1,10 +1,9 @@
 from setuptools import setup
-import re
-import os
-version = '1.0.0'
+
+__version__ = '1.0.0'
 
 setup(name='Flock',
-      version=version,
+      version=__version__,
       description="Python duck-like multiprocessing library",
       url="https://github.com/Captalys/flock",
       author="Wanderson Ferreira & Denis Urbanavicius",
@@ -12,4 +11,9 @@ setup(name='Flock',
       license="BSD",
       keywords="captalys analitics",
       packages=["flock"],
+      install_requires=[
+          'dill',
+          'pandas',
+          'numpy'
+      ],
       zip_safe=False)

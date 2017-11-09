@@ -1,5 +1,4 @@
 from multiprocessing import Process, Queue, JoinableQueue
-from abc import ABCMeta, abstractproperty
 
 
 class Executor(Process):
@@ -25,16 +24,19 @@ class Executor(Process):
                 kwargs[parName] = con
 
         while True:
-            function, args = self.taskQueue.get()
+            try:
+                function, args = self.taskQueue.get()
 
-            if function is None:
+                if function is None:
+                    self.taskQueue.task_done()
+                    break
+                else:
+                    res = function(*args, **kwargs)
+
                 self.taskQueue.task_done()
-                break
-            else:
-                res = function(*args, **kwargs)
-
-            self.taskQueue.task_done()
-            self.resultQueue.put(res)
+                self.resultQueue.put(res)
+            except Exception as e:
+                print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
         return True
 
 
@@ -73,26 +75,3 @@ class DatabaseAsync(object):
             _r = results.get()
             res.append(_r)
         return res
-
-
-class BaseDatabaseSetup(metaclass=ABCMeta):
-
-    @abstractproperty
-    def name(self):
-        return None
-
-    @abstractproperty
-    def server(self):
-        return None
-
-    @abstractproperty
-    def parameters(self):
-        return None
-
-
-class DatabaseSetup(object):
-
-    def __init__(self, name, server, parameters):
-        self.name = name
-        self.server = server
-        self.parameters = parameters
