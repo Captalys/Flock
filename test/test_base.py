@@ -4,7 +4,7 @@ import unittest
 
 class TestBase(unittest.TestCase):
 
-    def funcHelper1(self, a):
+    def funcHelper1(a):
         try:
             b = (a ** 2)
             return b
