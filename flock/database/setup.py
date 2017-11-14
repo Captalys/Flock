@@ -18,7 +18,7 @@ class BaseDatabaseSetup(metaclass=ABCMeta):
 
 class DatabaseSetup(object):
 
-    def __init__(self, name, server, parameters):
+    def __init__(self, name=None, server=None, parameters=None):
         self.name = name
         self.server = server
-        self.parameters = parameters
+        self.parameters = parameters if parameters is not None else {}
