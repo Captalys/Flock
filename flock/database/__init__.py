@@ -49,6 +49,13 @@ class DatabaseAsync(object):
         self.numProcesses = numProcesses
         self.setups = setups
 
+    def isIter(self, value):
+        try:
+            it = iter(value)
+            return True
+        except TypeError:
+            return False
+
     def apply(self, function, iterator):
 
         tasks = JoinableQueue()
@@ -62,7 +69,12 @@ class DatabaseAsync(object):
             ex.start()
 
         # make the inputs iterator
-        inputs = [(function, el) for el in iterator]
+        inputs = []
+        for parameter in iterator:
+            if not self.isIter(parameter):
+                parameter = (parameter, )
+            inputs.append((function, parameter))
+
         for _inpt in inputs:
             tasks.put(_inpt)
 
