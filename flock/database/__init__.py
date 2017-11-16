@@ -1,15 +1,16 @@
-from multiprocessing import Process, Queue, JoinableQueue
+from multiprocessing import Process, Queue, JoinableQueue, Pipe
 import sys
 from time import sleep
 
 
 class Executor(Process):
 
-    def __init__(self, taskQueue, resultQueue, databaseSetup):
+    def __init__(self, taskQueue, resultQueue, databaseSetup, childPipe):
         super(Executor, self).__init__()
         self.taskQueue = taskQueue
         self.resultQueue = resultQueue
         self.databaseSetup = databaseSetup
+        self.childPipe = childPipe
 
     def run(self):
         # setting up the environment
@@ -28,18 +29,20 @@ class Executor(Process):
 
         while True:
             try:
-                function, args = self.taskQueue.get()
+                _function, args = self.taskQueue.get()
 
-                if function is None:
+                if _function is None:
                     self.taskQueue.task_done()
                     break
                 else:
-                    res = function(*args, **kwargs)
+                    res = _function(*args, **kwargs)
 
                 self.taskQueue.task_done()
                 self.resultQueue.put(res)
             except Exception as e:
                 print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+
+        self.childPipe.send('Job done!')
         return True
 
 
@@ -51,7 +54,7 @@ class DatabaseAsync(object):
 
     def isIter(self, value):
         try:
-            it = iter(value)
+            _ = iter(value)
             return True
         except TypeError:
             return False
@@ -62,8 +65,9 @@ class DatabaseAsync(object):
         results = Queue()
 
         listExSize = min(self.numProcesses, len(iterator))
+        parentPipe, childPipe = Pipe()
 
-        executors = [Executor(tasks, results, self.setups) for _ in range(listExSize)]
+        executors = [Executor(tasks, results, self.setups, childPipe) for _ in range(listExSize)]
 
         for ex in executors:
             ex.start()
@@ -84,11 +88,12 @@ class DatabaseAsync(object):
 
         tasks.join()
 
-        for ex in executors:
-            ex.join()
+        for _ in range(listExSize):
+            parentPipe.recv()
 
         # get all the results:
         res = []
+
         while not results.empty():
             _r = results.get()
             res.append(_r)
