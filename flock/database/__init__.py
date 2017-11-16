@@ -1,4 +1,6 @@
 from multiprocessing import Process, Queue, JoinableQueue
+import sys
+from time import sleep
 
 
 class Executor(Process):
@@ -21,7 +23,8 @@ class Executor(Process):
                 dbPar = inst.parameters
                 parName = inst.name
                 con = inst.server(**dbPar)
-                kwargs[parName] = con
+                if parName is not None:
+                    kwargs[parName] = con
 
         while True:
             try:
@@ -80,6 +83,9 @@ class DatabaseAsync(object):
             tasks.put(pill)
 
         tasks.join()
+
+        for ex in executors:
+            ex.join()
 
         # get all the results:
         res = []
