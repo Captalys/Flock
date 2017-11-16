@@ -1,5 +1,6 @@
 from multiprocessing import Process, Queue, JoinableQueue
 import sys
+from time import sleep
 
 
 class Executor(Process):
@@ -70,6 +71,9 @@ class DatabaseAsync(object):
             tasks.put(pill)
 
         tasks.join()
+
+        for ex in executors:
+            ex.join()
 
         # get all the results:
         res = []
