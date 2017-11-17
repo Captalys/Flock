@@ -45,7 +45,8 @@ class Executor(Process):
 
                 self.taskQueue.task_done()
                 self.resultQueue.put(res)
-                self.progressQueue.put(self.SENTINEL)
+                if self.progressQueue is not None:
+                    self.progressQueue.put(self.SENTINEL)
             except Exception as e:
                 self.taskQueue.task_done()
                 logger = FlockLogger()
@@ -57,9 +58,10 @@ class Executor(Process):
 
 class DatabaseAsync(object):
 
-    def __init__(self, setups=None, numProcesses=5):
+    def __init__(self, setups=None, numProcesses=5, checkProgress=True):
         self.numProcesses = numProcesses
         self.setups = setups
+        self.checkProgress = checkProgress
 
     def isIter(self, value):
         try:
@@ -95,15 +97,18 @@ class DatabaseAsync(object):
 
         tasks = JoinableQueue()
         results = Queue()
-        progress = Queue()
 
         listExSize = min(self.numProcesses, len(iterator))
         parentPipe, childPipe = Pipe()
 
-        self.clear()
-        print("Progress of execution tasks...")
-        prgBar = Process(target=self.progressBar, args=(progress, len(iterator)))
-        prgBar.start()
+        if self.checkProgress:
+            progress = Queue()
+            self.clear()
+            print("Progress of execution tasks...")
+            prgBar = Process(target=self.progressBar, args=(progress, len(iterator)))
+            prgBar.start()
+        else:
+            progress = None
 
         executors = [Executor(tasks, results, self.setups, childPipe, progress) for _ in range(listExSize)]
 
@@ -130,20 +135,22 @@ class DatabaseAsync(object):
         for _ in range(listExSize):
             parentPipe.recv()
 
-        # finish progress bar queue
-        progress.put(None)
+        if self.checkProgress:
+            # finish progress bar queue
+            progress.put(None)
+            # start the local progress bar
+            sleep(0.01)  # really, too fast in the main queue
+            print("Fetching all the results...")
+            pbarLocal = tqdm(total=len(iterator))
 
         # get all the results:
         res = []
 
-        sleep(0.01)  # really, too fast in the main queue
-        print("Fetching all the results...")
-        pbarLocal = tqdm(total=len(iterator))
         while not results.empty():
             _r = results.get()
             res.append(_r)
-            pbarLocal.update()
-        pbarLocal.close()
+            if self.checkProgress:
+                pbarLocal.update()
         logger.info("Successful processing of the function {}".format(func.__name__))
         return res
 
@@ -153,6 +160,6 @@ def teste(val):
 
 
 if __name__ == '__main__':
-    db = DatabaseAsync()
-    iterator = 1 * [1, 2, 3, 4, 5, 6]
+    db = DatabaseAsync(checkProgress=False)
+    iterator = 100 * [1, 2, 3, 4, 5, 6]
     res = db.apply(teste, iterator)
