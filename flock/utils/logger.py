@@ -5,23 +5,23 @@ import logging
 from datetime import datetime
 
 
-class FlockLogger(logging.getLoggerClass()):
+class FlockLogger(object):
 
-    def __init__(self, logType='informative', folderName='logs', ext="txt"):
-        super(FlockLogger, self).__init__(name=__name__)
+    def __init__(self, folderName='logs', ext="txt"):
         self.folderName = folderName
         self.extension = ext
-        self.logType = logType
-        self.setup()
+        self.__hasInfo = None
+        self.__hasWarning = None
+        self.__hasError = None
 
-    def getFileName(self):
+    def getFileName(self, logType):
         now = datetime.now()
         year, month, day = str(now.year), str(now.month), str(now.day)
         fpath = gitpath.root() + "/" + self.folderName + "/" + year
-        fpath = fpath + "/" + month + "/" + day + "/" + self.logType + "." + self.extension
+        fpath = fpath + "/" + month + "/" + day + "/" + logType + "." + self.extension
         return fpath
 
-    def createFile(self, fileName):
+    def createFile(self, fileName, logType):
         if not os.path.exists(os.path.dirname(fileName)):
             try:
                 os.makedirs(os.path.dirname(fileName))
@@ -30,25 +30,47 @@ class FlockLogger(logging.getLoggerClass()):
                     raise
         with open(fileName, "a+") as f:
             if os.stat(fileName).st_size == 0:
-                f.write("Welcome to the beginning of the {} FlockLogger!!\n".format(self.logType.title()))
+                f.write("Welcome to the beginning of the {} FlockLogger!!\n".format(logType.title()))
                 f.write("Flock is a Captalys Data Science Project.\n\n\n")
             else:
                 f.write("")
         return True
 
-    def setup(self):
-        fileName = self.getFileName()
-        self.createFile(fileName)
+    def setup(self, logType):
+        fileName = self.getFileName(logType)
+        self.createFile(fileName, logType)
+        logger = logging.getLogger(logType)
         fhandler = logging.FileHandler(fileName)
         formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
         fhandler.setFormatter(formatter)
-        self.addHandler(fhandler)
-        self.setLevel(logging.INFO)
-        return True
+        logger.addHandler(fhandler)
+        logger.setLevel(logging.INFO)
+        return logger
+
+    def info(self, message):
+        if not self.__hasInfo:
+            logger = self.setup(logType='informative')
+            self.loggerInfo = logger
+        self.loggerInfo.info(message)
+        return
+
+    def warning(self, message):
+        if not self.__hasWarning:
+            logger = self.setup(logType='warnings')
+            self.loggerWarning = logger
+        self.loggerWarning.warning(message)
+        return
+
+    def error(self, message):
+        if not self.__hasError:
+            logger = self.setup(logType='errors')
+            self.loggerError = logger
+        self.loggerError.error(message)
+        return
 
 
 if __name__ == '__main__':
-    fl = FlockLogger("informative")
+    fl = FlockLogger()
     fl.info("Testing all this little things")
     fl.warning("Hey Jude, take a look at this use case. It might become deprecated")
     fl.error("I told you so... not working anymore")
