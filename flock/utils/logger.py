@@ -10,9 +10,6 @@ class FlockLogger(object):
     def __init__(self, folderPath='default', ext="txt"):
         self.folderPath = folderPath
         self.extension = ext
-        self.__hasInfo = None
-        self.__hasWarning = None
-        self.__hasError = None
 
     def getFileName(self, logType):
         if self.folderPath == "default":
@@ -49,27 +46,33 @@ class FlockLogger(object):
         fhandler.setFormatter(formatter)
         logger.addHandler(fhandler)
         logger.setLevel(logging.INFO)
-        return logger
+        return logger, fhandler
+
+    def __log(self, logType, message):
+        logger, handler = self.setup(logType=logType)
+        dlogs = {"informative": logger.info,
+                 "error": logger.error,
+                 "warning": logger.warning,
+                 "critical": logger.critical}
+        dlogs.get(logType)(message)
+        handler.close()
+        logger.removeHandler(handler)
+        return logger, handler
 
     def info(self, message):
-        if not self.__hasInfo:
-            logger = self.setup(logType='informative')
-            self.loggerInfo = logger
-        self.loggerInfo.info(message)
+        self.__log('informative', message)
         return
 
     def warning(self, message):
-        if not self.__hasWarning:
-            logger = self.setup(logType='warnings')
-            self.loggerWarning = logger
-        self.loggerWarning.warning(message)
+        self.__log('warning', message)
         return
 
     def error(self, message):
-        if not self.__hasError:
-            logger = self.setup(logType='errors')
-            self.loggerError = logger
-        self.loggerError.error(message)
+        self.__log('error', message)
+        return
+
+    def critical(self, message):
+        self.__log('critical', message)
         return
 
 

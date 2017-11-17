@@ -33,24 +33,27 @@ class Executor(Process):
                 if parName is not None:
                     kwargs[parName] = con
 
+        flag = True
         while True:
             try:
                 _function, args = self.taskQueue.get()
 
                 if _function is None:
                     self.taskQueue.task_done()
+                    flag = False
                     break
                 else:
                     res = _function(*args, **kwargs)
 
                 self.taskQueue.task_done()
                 self.resultQueue.put(res)
-                if self.progressQueue is not None:
-                    self.progressQueue.put(self.SENTINEL)
             except Exception as e:
                 self.taskQueue.task_done()
                 logger = FlockLogger()
                 logger.error("line {} {} {}".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e))
+            finally:
+                if (self.progressQueue is not None) and (flag is True):
+                    self.progressQueue.put(self.SENTINEL)
 
         self.childPipe.send('Job done!')
         return True
@@ -73,7 +76,8 @@ class DatabaseAsync(object):
     def progressBar(self, queueProgress, queueSize):
         pbar = tqdm(total=queueSize)
         for _ in iter(queueProgress.get, None):
-            pbar.update()
+            if _ is not None:
+                pbar.update()
         pbar.close()
 
     def clear(self):
@@ -160,6 +164,6 @@ def teste(val):
 
 
 if __name__ == '__main__':
-    db = DatabaseAsync(checkProgress=False)
-    iterator = 100 * [1, 2, 3, 4, 5, 6]
+    db = DatabaseAsync(checkProgress=True, numProcesses=30)
+    iterator = 100000 * [1, 2, 3, 4, 5, 6]
     res = db.apply(teste, iterator)
