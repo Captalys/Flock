@@ -1,6 +1,7 @@
 from multiprocessing import Process, Queue, JoinableQueue, Pipe
 import sys
 import os
+import dill
 from tqdm import tqdm
 from time import sleep
 from flock.utils.logger import FlockLogger
@@ -76,7 +77,21 @@ class DatabaseAsync(object):
     def clear(self):
         os.system('cls' if os.name == "nt" else "clear")
 
-    def apply(self, function, iterator):
+    def valid(self, function):
+        res = dill.pickles(function)
+        if res:
+            return True
+        else:
+            logger = FlockLogger()
+            logger.error("Your function is not pickable")
+            return False
+
+    def apply(self, func, iterator):
+        logger = FlockLogger()
+
+        if not self.valid(func):
+            print("There is an error with your function. Look at the logging files.")
+            return
 
         tasks = JoinableQueue()
         results = Queue()
@@ -100,7 +115,7 @@ class DatabaseAsync(object):
         for parameter in iterator:
             if not self.isIter(parameter):
                 parameter = (parameter, )
-            inputs.append((function, parameter))
+            inputs.append((func, parameter))
 
         for _inpt in inputs:
             tasks.put(_inpt)
@@ -128,7 +143,8 @@ class DatabaseAsync(object):
             _r = results.get()
             res.append(_r)
             pbarLocal.update()
-
+        pbarLocal.close()
+        logger.info("Successful processing of the function {}".format(func.__name__))
         return res
 
 
