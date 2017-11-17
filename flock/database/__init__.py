@@ -3,6 +3,7 @@ import sys
 import os
 from tqdm import tqdm
 from time import sleep
+from flock.utils.logger import FlockLogger
 
 
 class Executor(Process):
@@ -45,7 +46,9 @@ class Executor(Process):
                 self.resultQueue.put(res)
                 self.progressQueue.put(self.SENTINEL)
             except Exception as e:
-                print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+                self.taskQueue.task_done()
+                logger = FlockLogger()
+                logger.error("line {} {} {}".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e))
 
         self.childPipe.send('Job done!')
         return True
@@ -135,5 +138,5 @@ def teste(val):
 
 if __name__ == '__main__':
     db = DatabaseAsync()
-    iterator = 10000 * [1, 2, 3, 4, 5, 6]
+    iterator = 1 * [1, 2, 3, 4, 5, 6]
     res = db.apply(teste, iterator)
