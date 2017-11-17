@@ -1,16 +1,20 @@
 from multiprocessing import Process, Queue, JoinableQueue, Pipe
 import sys
+import os
+from tqdm import tqdm
 from time import sleep
 
 
 class Executor(Process):
 
-    def __init__(self, taskQueue, resultQueue, databaseSetup, childPipe):
+    def __init__(self, taskQueue, resultQueue, databaseSetup, childPipe, progress):
         super(Executor, self).__init__()
         self.taskQueue = taskQueue
         self.resultQueue = resultQueue
+        self.progressQueue = progress
         self.databaseSetup = databaseSetup
         self.childPipe = childPipe
+        self.SENTINEL = 1
 
     def run(self):
         # setting up the environment
@@ -39,6 +43,7 @@ class Executor(Process):
 
                 self.taskQueue.task_done()
                 self.resultQueue.put(res)
+                self.progressQueue.put(self.SENTINEL)
             except Exception as e:
                 print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
 
@@ -59,15 +64,30 @@ class DatabaseAsync(object):
         except TypeError:
             return False
 
+    def progressBar(self, queueProgress, queueSize):
+        pbar = tqdm(total=queueSize)
+        for _ in iter(queueProgress.get, None):
+            pbar.update()
+        pbar.close()
+
+    def clear(self):
+        os.system('cls' if os.name == "nt" else "clear")
+
     def apply(self, function, iterator):
 
         tasks = JoinableQueue()
         results = Queue()
+        progress = Queue()
 
         listExSize = min(self.numProcesses, len(iterator))
         parentPipe, childPipe = Pipe()
 
-        executors = [Executor(tasks, results, self.setups, childPipe) for _ in range(listExSize)]
+        self.clear()
+        print("Progress of execution tasks...")
+        prgBar = Process(target=self.progressBar, args=(progress, len(iterator)))
+        prgBar.start()
+
+        executors = [Executor(tasks, results, self.setups, childPipe, progress) for _ in range(listExSize)]
 
         for ex in executors:
             ex.start()
@@ -88,13 +108,32 @@ class DatabaseAsync(object):
 
         tasks.join()
 
+        # wait for all the results to end
         for _ in range(listExSize):
             parentPipe.recv()
+
+        # finish progress bar queue
+        progress.put(None)
 
         # get all the results:
         res = []
 
+        sleep(0.01)  # really, too fast in the main queue
+        print("Fetching all the results...")
+        pbarLocal = tqdm(total=len(iterator))
         while not results.empty():
             _r = results.get()
             res.append(_r)
+            pbarLocal.update()
+
         return res
+
+
+def teste(val):
+    return val ** 2
+
+
+if __name__ == '__main__':
+    db = DatabaseAsync()
+    iterator = 10000 * [1, 2, 3, 4, 5, 6]
+    res = db.apply(teste, iterator)
