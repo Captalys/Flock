@@ -1,23 +1,27 @@
 import os
 import errno
-import gitpath
 import logging
 from datetime import datetime
+from pathlib import Path
 
 
 class FlockLogger(object):
 
-    def __init__(self, folderName='logs', ext="txt"):
-        self.folderName = folderName
+    def __init__(self, folderPath='default', ext="txt"):
+        self.folderPath = folderPath
         self.extension = ext
         self.__hasInfo = None
         self.__hasWarning = None
         self.__hasError = None
 
     def getFileName(self, logType):
+        if self.folderPath == "default":
+            fpath = str(Path.home())
+        else:
+            fpath = self.folderPath
         now = datetime.now()
         year, month, day = str(now.year), str(now.month), str(now.day)
-        fpath = gitpath.root() + "/" + self.folderName + "/" + year
+        fpath = fpath + "/" + ".flock" + "/" + year
         fpath = fpath + "/" + month + "/" + day + "/" + logType + "." + self.extension
         return fpath
 
@@ -41,7 +45,7 @@ class FlockLogger(object):
         self.createFile(fileName, logType)
         logger = logging.getLogger(logType)
         fhandler = logging.FileHandler(fileName)
-        formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+        formatter = logging.Formatter("%(asctime)s %(levelname)s SourceFile: %(pathname)s ProcessName: %(processName)s Line: %(lineno)d Message: %(message)s")
         fhandler.setFormatter(formatter)
         logger.addHandler(fhandler)
         logger.setLevel(logging.INFO)
