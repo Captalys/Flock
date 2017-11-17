@@ -21,6 +21,7 @@ class Executor(Process):
     def run(self):
         # setting up the environment
         kwargs = {}
+
         if self.databaseSetup is not None:
 
             if not isinstance(self.databaseSetup, list):
@@ -149,13 +150,17 @@ class DatabaseAsync(object):
 
         # get all the results:
         res = []
-
+        checklist = 0
         while not results.empty():
             _r = results.get()
             res.append(_r)
+            checklist += 1
             if self.checkProgress:
                 pbarLocal.update()
         logger.info("Successful processing of the function {}".format(func.__name__))
+
+        if checklist != len(iterator):
+            logger.error("The return list object does not have the same size as your input iterator.")
         return res
 
 
