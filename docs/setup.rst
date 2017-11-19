@@ -1,5 +1,5 @@
-Setup
-=====
+Installation
+============
 
 Follow the next steps in order to install the :mod:`Flock` module:
 

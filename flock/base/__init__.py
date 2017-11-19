@@ -11,6 +11,7 @@ import sys
 import dill
 from multiprocessing import Process, Pipe, get_context
 from multiprocessing.pool import Pool
+from flock.utils.logger import FlockLogger
 
 
 class NoDaemonProcess(Process):
@@ -78,7 +79,9 @@ class BaseMultiProc(object):
                 retQ = asyncRes.get(timeout=self.timeOutError)
                 del retQ
             except Exception as e:
-                print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+                fl = FlockLogger()
+                fl.error('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+                print("Some error occur - Check the logs.")
 
     @classmethod
     def dillEncoded(cls, payload):
@@ -133,7 +136,7 @@ class BaseMultiProc(object):
         Returns the result of the function given a set of arguments of that function.
         """
         parentCon, childCon = Pipe()
-        parentProcess = Process(target=self.computeFunc, args=(childCon, function,  iterator))
+        parentProcess = Process(target=self.computeFunc, args=(childCon, function, iterator))
         parentProcess.daemon = False
         parentProcess.start()
         res = parentCon.recv()
