@@ -5,6 +5,7 @@ import dill
 from tqdm import tqdm
 from time import sleep
 from flock.utils.logger import FlockLogger
+from flock.utils import isIter, isValidFunc
 
 
 class Executor(Process):
@@ -67,13 +68,6 @@ class DatabaseAsync(object):
         self.setups = setups
         self.checkProgress = checkProgress
 
-    def isIter(self, value):
-        try:
-            _ = iter(value)
-            return True
-        except TypeError:
-            return False
-
     def progressBar(self, queueProgress, queueSize):
         pbar = tqdm(total=queueSize)
         for _ in iter(queueProgress.get, None):
@@ -84,19 +78,10 @@ class DatabaseAsync(object):
     def clear(self):
         os.system('cls' if os.name == "nt" else "clear")
 
-    def valid(self, function):
-        res = dill.pickles(function)
-        if res:
-            return True
-        else:
-            logger = FlockLogger()
-            logger.error("Your function is not pickable")
-            return False
-
     def apply(self, func, iterator):
         logger = FlockLogger()
 
-        if not self.valid(func):
+        if not isValidFunc(func):
             print("There is an error with your function. Look at the logging files.")
             return
 
@@ -123,7 +108,7 @@ class DatabaseAsync(object):
         # make the inputs iterator
         inputs = []
         for parameter in iterator:
-            if not self.isIter(parameter):
+            if not isIter(parameter):
                 parameter = (parameter, )
             inputs.append((func, parameter))
 

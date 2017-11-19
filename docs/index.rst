@@ -9,13 +9,15 @@ Welcome to Flock's documentation!
 .. automodule:: flock
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    setup
-   base
+   starting
+   flockfunction
    flockdatabase
    flockdataframe
    flocklist
+   base
 
 
 
