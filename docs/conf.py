@@ -51,8 +51,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Flock'
-copyright = '2017, Wanderson Ferreira'
-author = 'Wanderson Ferreira'
+copyright = '2017, Captalys Data Science Team'
+author = 'Captalys Data Science Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -144,7 +144,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'Flock.tex', 'Flock Documentation',
-     'Wanderson Ferreira', 'manual'),
+     'Captalys Data Science Team', 'manual'),
 ]
 
 
