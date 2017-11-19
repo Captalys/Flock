@@ -1,5 +1,5 @@
-Multiprocessing procedures that uses **Database Connections**
-=============================================================
+Multiprocessing **Database** dependent functions
+================================================
 
 .. autoclass:: flock.database.DatabaseAsync
    :members: apply
