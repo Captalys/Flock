@@ -2,3 +2,5 @@ numpy
 pandas
 dill
 tqdm
+sphinx
+sphinx-rtd-theme
