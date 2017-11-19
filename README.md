@@ -1,15 +1,31 @@
-# Flock
-[![CircleCI](https://circleci.com/gh/Captalys/Flock/tree/master.svg?style=svg&circle-token=5cb59f70a16b27d990e7051193480fc40d789921)](https://circleci.com/gh/Captalys/Flock/tree/master) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/22e85ed2079b4bf898c72d151c98adc6)](https://www.codacy.com/app/wanderson.ferreira/Flock?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Captalys/Flock&amp;utm_campaign=Badge_Grade) [![Codacy Badge](https://api.codacy.com/project/badge/Coverage/22e85ed2079b4bf898c72d151c98adc6)](https://www.codacy.com/app/wanderson.ferreira/Flock?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Captalys/Flock&amp;utm_campaign=Badge_Coverage)
+# Flock Multiprocessing
 
 Python library for Duck-like multiprocessing 
 
-# Execute all the tests
+Flock is intended to help you to easily apply multiprocessing in your development code without thinking too much.
+
+The system is capable of easily setup a multiprocessing environment to handle instance methods, class methods, lambdas and regular functions to be applied to any iterable. See the documentation [Getting Started!](http://http://flock.readthedocs.io/en/master/starting.html)
+
+
+When the function to be multiprocessed makes any interaction with **databases** we run into trouble because connections are not allowed to be passed through processes inside messages. In order to handle this situation, we developed the **DatabaseAsync** class, [check it out](http://flock.readthedocs.io/en/master/starting.html#database-dependent-functions)
+
+
+# Installation
+
+Already available as in pypi
+
+``` python
+pip install flockmp
+```
+
+
+
+# Contributing
+
+Please, fork the repository and make sure to run all tests before submitting any contribution.
 
 In order to execute all tests for this project, run the command below:
 
 ``` python
 python -m unittest discover test
 ```
-
-
-**WARNING:** Make sure to pass ALL tests before making a push to any main branch
