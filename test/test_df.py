@@ -1,4 +1,4 @@
-from flock.dataframe import DataFrameAsync
+from flockmp.dataframe import DataFrameAsync
 from pandas import DataFrame
 import unittest
 

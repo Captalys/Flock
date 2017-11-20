@@ -1,4 +1,4 @@
-from flock.base import BaseMultiProc
+from flockmp.base import BaseMultiProc
 import unittest
 
 
