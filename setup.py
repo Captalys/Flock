@@ -1,6 +1,6 @@
 from setuptools import setup
 
-__version__ = '1.2.0b1'
+__version__ = '1.2.0b2'
 
 setup(name='FlockMP',
       version=__version__,
