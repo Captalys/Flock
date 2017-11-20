@@ -1,6 +1,6 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
-__version__ = '1.2.0b2'
+__version__ = '1.2.0b5'
 
 setup(name='FlockMP',
       version=__version__,
@@ -10,7 +10,9 @@ setup(name='FlockMP',
       author_email="wanderson.ferreira@captalys.com.br",
       license="MIT",
       keywords="captalys analitics multiprocessing dataframe",
-      packages=["flockmp"],
+      package_dir={'flockmp': 'flockmp'},
+      packages=["flockmp", "flockmp.base", "flockmp.database", 
+                "flockmp.dataframe", "flockmp.list", "flockmp.utils"],
       python_requires='>=3',
       install_requires=[
           'dill',
