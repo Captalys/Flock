@@ -4,8 +4,8 @@ import os
 import dill
 from tqdm import tqdm
 from time import sleep
-from flock.utils.logger import FlockLogger
-from flock.utils import isIter, isValidFunc
+from flockmp.utils.logger import FlockLogger
+from flockmp.utils import isIter, isValidFunc
 
 
 class Executor(Process):

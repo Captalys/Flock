@@ -11,7 +11,7 @@ import sys
 import dill
 from multiprocessing import Process, Pipe, get_context
 from multiprocessing.pool import Pool
-from flock.utils.logger import FlockLogger
+from flockmp.utils.logger import FlockLogger
 
 
 class NoDaemonProcess(Process):

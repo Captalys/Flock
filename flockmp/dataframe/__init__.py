@@ -1,5 +1,5 @@
-from flock.base import BaseMultiProc
-from flock.utils import split_chunks
+from flockmp.base import BaseMultiProc
+from flockmp.utils import split_chunks
 from pandas import concat
 
 

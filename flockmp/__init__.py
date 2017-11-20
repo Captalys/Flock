@@ -1,6 +1,6 @@
-from flock.base import BaseMultiProc
-from flock.utils import isIter
-from flock.utils.logger import FlockLogger
+from flockmp.base import BaseMultiProc
+from flockmp.utils import isIter
+from flockmp.utils.logger import FlockLogger
 
 
 class FunctionAsync(object):

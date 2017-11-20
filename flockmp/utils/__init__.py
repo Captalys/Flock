@@ -1,5 +1,5 @@
 from numpy import array_split
-from flock.utils.logger import FlockLogger
+from flockmp.utils.logger import FlockLogger
 import dill
 
 
