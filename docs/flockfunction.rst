@@ -7,9 +7,9 @@ It's supported the following list of functions:
     - Class methods
     - Regular functions
 
-If you function needs connection to any database to perform its computation, please use the :py:class:`~flock.database.DatabaseAsync` class.
+If you function needs connection to any database to perform its computation, please use the :py:class:`~flockmp.database.DatabaseAsync` class.
 
-.. autoclass:: flock.FunctionAsync
+.. autoclass:: flockmp.FunctionAsync
    :members: apply
 
 

@@ -1,7 +1,7 @@
 Multiprocessing **DataFrame** objects
 =====================================
 
-.. autoclass:: flock.dataframe.DataFrameAsync
+.. autoclass:: flockmp.dataframe.DataFrameAsync
    :members: apply
 
 Example

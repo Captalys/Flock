@@ -1,12 +1,12 @@
 Flock Base class
 ================
 
-Base class used to build the :py:class:`~flock.list.ListAsync`, :py:class:`~flock.dataframe.DataFrameAsync` and :py:class:`~flock.FunctionAsync` classes.
+Base class used to build the :py:class:`~flockmp.list.ListAsync`, :py:class:`~flockmp.dataframe.DataFrameAsync` and :py:class:`~flockmp.FunctionAsync` classes.
 
 You should avoid using this class inside your code. The interface might change without previous notice.
 
 
-.. autoclass:: flock.base.BaseMultiProc
+.. autoclass:: flockmp.base.BaseMultiProc
    :members: executeAsync
 
 

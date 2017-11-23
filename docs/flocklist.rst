@@ -1,7 +1,7 @@
 Multiprocessing **List** objects
 ================================
 
-.. autoclass:: flock.list.ListAsync
+.. autoclass:: flockmp.list.ListAsync
    :members: apply
 
 

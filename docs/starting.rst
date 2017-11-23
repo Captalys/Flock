@@ -4,10 +4,10 @@ Getting Started
 
     - Go to the :doc:`setup` page.
     - Learn the basic concepts of Flock.
-      	- :py:class:`~flock.FunctionAsync`
-	- :py:class:`~flock.dataframe.DataFrameAsync`
-	- :py:class:`~flock.list.ListAsync`
-	- :py:class:`~flock.database.DatabaseAsync`
+      	- :py:class:`~flockmp.FunctionAsync`
+	- :py:class:`~flockmp.dataframe.DataFrameAsync`
+	- :py:class:`~flockmp.list.ListAsync`
+	- :py:class:`~flockmp.database.DatabaseAsync`
 	    
     - Dive in to other tutorials below.
         - `Basic Function`_
@@ -20,7 +20,7 @@ Getting Started
 
 Basic Function
 --------------
-      We only need to define our iterator which are the elements that will be applied to the given function. After that, we use the :func:`apply` from the :py:class:`~flock.FunctionAsync`.
+      We only need to define our iterator which are the elements that will be applied to the given function. After that, we use the :func:`apply` from the :py:class:`~flockmp.FunctionAsync`.
 
 .. code-block:: python
    :emphasize-lines: 6
@@ -137,4 +137,4 @@ Database dependent functions
    
 
 In the setup process, the attribute `name` should be the same value as the `variable name` inside the :func:`myFunction` that will be processed.
-As you noticed, the setup process can be a little boring, so we have a :py:class:`~flock.database.setup.BaseDatabaseSetup` to be extended and you can hide all this portion inside your code.
+As you noticed, the setup process can be a little boring, so we have a :py:class:`~flockmp.database.setup.BaseDatabaseSetup` to be extended and you can hide all this portion inside your code.

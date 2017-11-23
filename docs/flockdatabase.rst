@@ -1,19 +1,19 @@
 Multiprocessing **Database** dependent functions
 ================================================
 
-.. autoclass:: flock.database.DatabaseAsync
+.. autoclass:: flockmp.database.DatabaseAsync
    :members: apply
 
 
-:py:class:`~flock.database.setup.DatabaseSetup`
+:py:class:`~flockmp.database.setup.DatabaseSetup`
 -----------------------------------------------
 
-.. autoclass:: flock.database.setup.DatabaseSetup
+.. autoclass:: flockmp.database.setup.DatabaseSetup
 
 
 
 
 Abstract class used to extend and create your custom interfaces to connect the desired database.
 
-.. autoclass:: flock.database.setup.BaseDatabaseSetup
+.. autoclass:: flockmp.database.setup.BaseDatabaseSetup
    :members: name, server, parameters
