@@ -23,39 +23,41 @@ class Executor(Process):
         # setting up the environment
         kwargs = {}
 
-        if self.databaseSetup is not None:
+        try:
+            if self.databaseSetup is not None:
 
-            if not isinstance(self.databaseSetup, list):
-                self.databaseSetup = [self.databaseSetup]
+                if not isinstance(self.databaseSetup, list):
+                    self.databaseSetup = [self.databaseSetup]
 
-            for inst in self.databaseSetup:
-                dbPar = inst.parameters
-                parName = inst.name
-                con = inst.server(**dbPar)
-                if parName is not None:
-                    kwargs[parName] = con
+                for inst in self.databaseSetup:
+                    dbPar = inst.parameters
+                    parName = inst.name
+                    con = inst.server(**dbPar)
+                    if parName is not None:
+                        kwargs[parName] = con
 
-        flag = True
-        while True:
-            try:
-                _function, args = self.taskQueue.get()
+            flag = True
+            while True:
+                try:
+                    _function, args = self.taskQueue.get()
 
-                if _function is None:
-                    self.taskQueue.task_done()
-                    flag = False
-                    break
-                else:
-                    res = _function(*args, **kwargs)
+                    if _function is None:
+                        flag = False
+                        break
+                    else:
+                        res = _function(*args, **kwargs)
 
-                self.taskQueue.task_done()
-                self.resultQueue.put(res)
-            except Exception as e:
-                self.taskQueue.task_done()
-                logger = FlockLogger()
-                logger.error("line {} {} {}".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e))
-            finally:
-                if (self.progressQueue is not None) and (flag is True):
-                    self.progressQueue.put(self.SENTINEL)
+                    self.resultQueue.put(res)
+                except Exception as e:
+                    self.resultQueue.put(None)
+                    logger = FlockLogger()
+                    logger.error("Function failed! Line {} {} {}".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e))
+                finally:
+                    if (self.progressQueue is not None) and (flag is True):
+                        self.progressQueue.put(self.SENTINEL)
+        except Exception as e:
+            logger = FlockLogger()
+            logger.error("Worker failed! - {} - {}".format(type(e).__name__, e))
 
         self.childPipe.send('Job done!')
         return True
@@ -85,7 +87,7 @@ class DatabaseAsync(object):
             print("There is an error with your function. Look at the logging files.")
             return
 
-        tasks = JoinableQueue()
+        tasks = Queue()
         results = Queue()
 
         listExSize = min(self.numProcesses, len(iterator))
@@ -119,8 +121,6 @@ class DatabaseAsync(object):
         for pill in poisonPills:
             tasks.put(pill)
 
-        tasks.join()
-
         # wait for all the results to end
         for _ in range(listExSize):
             parentPipe.recv()
@@ -136,7 +136,7 @@ class DatabaseAsync(object):
         # get all the results:
         res = []
         checklist = 0
-        while not results.empty():
+        for i in range(results.qsize()):
             _r = results.get()
             res.append(_r)
             checklist += 1
@@ -146,6 +146,11 @@ class DatabaseAsync(object):
 
         if checklist != len(iterator):
             logger.error("The return list object does not have the same size as your input iterator.")
+
+        # headshot remaining zombies
+        for ex in executors:
+            ex.terminate()
+
         return res
 
 
