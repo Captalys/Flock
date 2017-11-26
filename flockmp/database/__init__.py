@@ -136,7 +136,7 @@ class DatabaseAsync(object):
         # get all the results:
         res = []
         checklist = 0
-        for i in range(results.qsize()):
+        for i in range(len(iterator)):
             _r = results.get()
             res.append(_r)
             checklist += 1
