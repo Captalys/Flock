@@ -1,4 +1,4 @@
-from multiprocessing import Process, Queue, JoinableQueue, Pipe
+from multiprocessing import Process, Queue, JoinableQueue, Pipe, Manager
 import sys
 import os
 import dill
@@ -10,14 +10,25 @@ from flockmp.utils import isIter, isValidFunc
 
 class Executor(Process):
 
-    def __init__(self, taskQueue, resultQueue, databaseSetup, childPipe, progress):
+    def __init__(self, taskQueue, resultManager, databaseSetup, childPipe, progress):
         super(Executor, self).__init__()
         self.taskQueue = taskQueue
-        self.resultQueue = resultQueue
+        self.resultManager = resultManager
         self.progressQueue = progress
         self.databaseSetup = databaseSetup
         self.childPipe = childPipe
         self.SENTINEL = 1
+
+
+    def sendData(self, res):
+        while True:
+            try:
+                self.resultManager.append(res)
+                break
+            except ConnectionRefusedError as err:
+                sleep(0.2)  # no tight loops
+                continue
+        return
 
     def run(self):
         # setting up the environment
@@ -47,9 +58,8 @@ class Executor(Process):
                     else:
                         res = _function(*args, **kwargs)
 
-                    self.resultQueue.put(res)
+                    self.sendData(res)
                 except Exception as e:
-                    self.resultQueue.put(None)
                     logger = FlockLogger()
                     logger.error("Function failed! Line {} {} {}".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e))
                 finally:
@@ -77,6 +87,24 @@ class DatabaseAsync(object):
                 pbar.update()
         pbar.close()
 
+    def getProgressBar(self):
+        if self.checkProgress:
+            progress = Queue()
+            self.clear()
+            print("Progress of execution tasks...")
+            prgBar = Process(target=self.progressBar, args=(progress, len(iterator)))
+            prgBar.start()
+        else:
+            progress = None
+        return progress
+
+    def sendInputs(self, tasks, func, iterator):
+        for parameter in iterator:
+            if not isIter(parameter):
+                parameter = (parameter, )
+            tasks.put((func, parameter))
+        return
+
     def clear(self):
         os.system('cls' if os.name == "nt" else "clear")
 
@@ -88,35 +116,22 @@ class DatabaseAsync(object):
             return
 
         tasks = Queue()
-        results = Queue()
+
+        manager = Manager()
+        results = manager.list()
 
         listExSize = min(self.numProcesses, len(iterator))
         parentPipe, childPipe = Pipe()
 
-        if self.checkProgress:
-            progress = Queue()
-            self.clear()
-            print("Progress of execution tasks...")
-            prgBar = Process(target=self.progressBar, args=(progress, len(iterator)))
-            prgBar.start()
-        else:
-            progress = None
-
+        progress = self.getProgressBar()
         executors = [Executor(tasks, results, self.setups, childPipe, progress) for _ in range(listExSize)]
 
         for ex in executors:
             ex.start()
 
-        # make the inputs iterator
-        inputs = []
-        for parameter in iterator:
-            if not isIter(parameter):
-                parameter = (parameter, )
-            inputs.append((func, parameter))
+        self.sendInputs(tasks, func, iterator)
 
-        for _inpt in inputs:
-            tasks.put(_inpt)
-
+        # kill each executor processes
         poisonPills = [(None, None)] * listExSize
         for pill in poisonPills:
             tasks.put(pill)
@@ -128,30 +143,15 @@ class DatabaseAsync(object):
         if self.checkProgress:
             # finish progress bar queue
             progress.put(None)
-            # start the local progress bar
-            sleep(0.01)  # really, too fast in the main queue
-            print("Fetching all the results...")
-            pbarLocal = tqdm(total=len(iterator))
 
-        # get all the results:
-        res = []
-        checklist = 0
-        for i in range(len(iterator)):
-            _r = results.get()
-            res.append(_r)
-            checklist += 1
-            if self.checkProgress:
-                pbarLocal.update()
-        logger.info("Successful processing of the function {}".format(func.__name__))
-
-        if checklist != len(iterator):
+        if len(results) != len(iterator):
             logger.error("The return list object does not have the same size as your input iterator.")
 
         # headshot remaining zombies
         for ex in executors:
             ex.terminate()
 
-        return res
+        return results
 
 
 def teste(val):
@@ -159,6 +159,7 @@ def teste(val):
 
 
 if __name__ == '__main__':
-    db = DatabaseAsync(checkProgress=True, numProcesses=30)
-    iterator = 100000 * [1, 2, 3, 4, 5, 6]
+    db = DatabaseAsync(checkProgress=True, numProcesses=200)
+    iterator = 10000 * [1, 2, 3, 4, 5, 6]
     res = db.apply(teste, iterator)
+    print("final", len(res))
