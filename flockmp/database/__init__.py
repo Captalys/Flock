@@ -19,7 +19,6 @@ class Executor(Process):
         self.childPipe = childPipe
         self.SENTINEL = 1
 
-
     def sendData(self, res):
         while True:
             try:
@@ -87,12 +86,12 @@ class DatabaseAsync(object):
                 pbar.update()
         pbar.close()
 
-    def getProgressBar(self):
+    def getProgressBar(self, sizeIter):
         if self.checkProgress:
             progress = Queue()
             self.clear()
             print("Progress of execution tasks...")
-            prgBar = Process(target=self.progressBar, args=(progress, len(iterator)))
+            prgBar = Process(target=self.progressBar, args=(progress, sizeIter))
             prgBar.start()
         else:
             progress = None
@@ -123,7 +122,7 @@ class DatabaseAsync(object):
         listExSize = min(self.numProcesses, len(iterator))
         parentPipe, childPipe = Pipe()
 
-        progress = self.getProgressBar()
+        progress = self.getProgressBar(sizeIter=len(iterator))
         executors = [Executor(tasks, results, self.setups, childPipe, progress) for _ in range(listExSize)]
 
         for ex in executors:
