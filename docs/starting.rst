@@ -20,7 +20,7 @@ Getting Started
 
 Basic Function
 --------------
-      We only need to define our iterator which are the elements that will be applied to the given function. After that, we use the :func:`apply` from the :py:class:`~flockmp.FunctionAsync`.
+      We only need to define our iterator, which are the elements that will be applied to the given function. After that, we use the :func:`apply` from the :py:class:`~flockmp.FunctionAsync`.
 
 .. code-block:: python
    :emphasize-lines: 6
@@ -38,7 +38,7 @@ Basic Function
 Lambdas
 -------
 
-    There are no differences in usage if you have a :func:`lambda` function instead.
+    Usage is the same if you have a :func:`lambda` function.
     
 .. code-block:: python
    :emphasize-lines: 2
@@ -53,7 +53,7 @@ Lambdas
 Instance methods
 ----------------
 
-    The regular :mod:`multiprocessing` module can't handle instance methods very well because they are not `picklable` objects. However, you can continue to use the same interface as we see before for instance methods aswell.
+    The regular :mod:`multiprocessing` module can't handle instance methods very well because they are not `picklable` objects. However, you can continue to use the same interface as before for instance methods.
 
 .. code-block:: python
    :emphasize-lines: 10
@@ -76,7 +76,7 @@ Instance methods
 DataFrames
 ----------
 
-   There are two use cases related to DataFrames already implemented. First, you might want to execute the :func:`apply` function in a row-by-row base. For example, in order to create a new column using two existent columns.
+   There are two use cases related to DataFrames already implemented. First, you might want to execute the :func:`apply` function in a row-by-row basis. For example, in order to create a new column using two existent columns.
    
 .. code-block:: python
 
@@ -85,10 +85,10 @@ DataFrames
    df["new-var"] = DataFrameAsync.apply(df[["foo", "bar"]],
                                        lambda x: (x["foo"] + x["bar"]) ** 2, style="row-like")
 
-Using the previous method, :mod:`Flock` will split your DataFrame in chunks, send each chunk to a specific process and inside each process it will multiprocess each row. This approach is very scalable as you have a very large dataframe and only want to perform an apply method.
+Using the previous method, :mod:`Flock` will split your DataFrame into chunks, send each chunk to a specific process, and inside each process it will multiprocess each row. This approach is very scalable if you have a very large dataframe and only want to perform an apply method.
 
 
-The next use case is the block based. Imagine you want to use your entire dataframe as input to some operation that will be applied to every column.
+The next use case is block based. Imagine you want to use your entire dataframe as input to some operation that will be applied to every column.
 
 .. code-block:: python
 
@@ -101,13 +101,13 @@ The next use case is the block based. Imagine you want to use your entire datafr
 Database dependent functions
 ----------------------------
 
-   This is a very useful class if you work with many databases in your code base. One of the main problems with multiprocessing and databases is related to the impossibility of sending a `connection` object to each open process. And this become very annoying as you have multiple databases with several drivers.
+   This is a very useful class if you work with many databases in your code base. One of the main problems with multiprocessing and databases is related to the impossibility of sending a `connection` object to each open process. This becomes very annoying since you have multiple databases with several drivers.
 
-   One known solution to this problem is the guidance to open your connection inside the multiprocessed function. However, this is very bad idea sometimes because the time you might take to connect is very long and you don't enjoy the full benefits of multiprocessing.
+   One known solution to this problem is the guidance to open your connection inside the multiprocessed function. However, this is a very bad idea sometimes because the time you might take to connect can be very long and you will not gain the full benefits of multiprocessing.
 
    The strategy adopted by :mod:`Flock` is to divide this problem into two steps. First, you need to create a :py:class:`~flock.database.setup.DatabaseSetup` instance to inform all the connections and name variables you are using inside the function you desire to multiprocess.
 
-   Using this instance, :mod:`Flock` will establish all your needed connection only once per process and reuse the connection for each task that processes get assigned to perform. Let's see that in action mocking a MySQL connection (SQLAlchemy) and a Apache Cassandra connection (cassandra-driver).
+   Using this instance, :mod:`Flock` will establish all your needed connections only once per process and reuse the connections for each task that processes get assigned to perform. Let's see that in action mocking a MySQL connection (SQLAlchemy) and a Apache Cassandra connection (cassandra-driver).
 
 
 .. code-block:: python
@@ -137,4 +137,4 @@ Database dependent functions
    
 
 In the setup process, the attribute `name` should be the same value as the `variable name` inside the :func:`myFunction` that will be processed.
-As you noticed, the setup process can be a little boring, so we have a :py:class:`~flockmp.database.setup.BaseDatabaseSetup` to be extended and you can hide all this portion inside your code.
+As you can see, the setup process can be a little boring, so we have a :py:class:`~flockmp.database.setup.BaseDatabaseSetup` to be extended and you can hide all this portion inside your code.
