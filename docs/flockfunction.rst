@@ -1,13 +1,13 @@
 Multiprocessing your **Functions**
 ==================================
 
-It's supported the following list of functions:
+Flock supports the following list of functions:
     - Lambdas
     - Instance methods
     - Class methods
     - Regular functions
 
-If you function needs connection to any database to perform its computation, please use the :py:class:`~flockmp.database.DatabaseAsync` class.
+If your function needs a connection to any database to perform its computation, please use the :py:class:`~flockmp.database.DatabaseAsync` class.
 
 .. autoclass:: flockmp.FunctionAsync
    :members: apply

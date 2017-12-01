@@ -9,7 +9,7 @@ In order to use Flock Multiprocessing you only need to install it with pip:
 Contribute
 ----------
 
-Please, we want to hear back from you. Go to the github page and make your contributions too, your help can range from ideas and improve documentation to actually coding new features!!
+Please, we want to hear back from you. Go to the github page and make your contributions too. Your help can range from ideas and improve documentation to actually coding new features!
 
 
 
