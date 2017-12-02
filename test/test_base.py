@@ -1,8 +1,8 @@
 from flockmp.base import BaseMultiProc
-import unittest
+import pytest
 
 
-class TestBase(unittest.TestCase):
+class TestBase(object):
 
     def funcHelper1(self, a):
         try:
@@ -15,13 +15,5 @@ class TestBase(unittest.TestCase):
         bp = BaseMultiProc()
         iterator = list(range(10))
         res = bp.executeAsync(self.funcHelper1, iterator)
-        self.assertEqual(len(res), 10)
-        self.assertEqual(max(res), 81)
-
-
-def main():
-    unittest.main()
-
-
-if __name__ == '__main__':
-    main()
+        assert len(res) == 10
+        assert max(res) == 81

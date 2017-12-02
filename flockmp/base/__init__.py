@@ -20,8 +20,6 @@ class NoDaemonProcess(Process):
 
     When a process exits, it attempts to terminate all of its daemonic child processes.
 
-    It inheritates the Process method from `multiprocessing`
-
     :param Process Process: method inherited from `multiprocessing` package
     """
 
@@ -35,8 +33,8 @@ class NoDaemonProcess(Process):
 
 class FlockPool(Pool):
     """
-    :class:`FlockPool` inheritates the Pool method from :mod:`multiprocessing` module. It settles the pool size and
-    context that will be used to use the function asynchronally.
+    :class:`FlockPool` inherits the Pool method from :mod:`multiprocessing` module. It settles the pool size and
+    context that will be used to use the function asynchronously.
 
     Parameters
     ----------
@@ -47,7 +45,7 @@ class FlockPool(Pool):
 
 class BaseMultiProc(object):
     """
-    :class:`BaseMultiProc` is a class to apply and manage multiprocessing tasks within fucntions.
+    :class:`BaseMultiProc` is a class to apply and manage multiprocessing tasks within functions.
 
     :param int poolSize: amount of resources set to be processed the same time (`default` = 5)\n
     :param int timeOutError:  degree of tolerance for waiting a process to end (`default` = 50)\n
@@ -62,7 +60,7 @@ class BaseMultiProc(object):
 
     def getResults(self, result):
         """
-        :func:`getResults` append results obtained from functions asynchronally.
+        :func:`getResults` append results obtained from functions asynchronously.
 
         :param list result: results calculated from the function
         """
