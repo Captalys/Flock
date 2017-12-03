@@ -5,71 +5,9 @@ import dill
 from tqdm import tqdm
 from time import sleep
 from flockmp.utils.logger import FlockLogger
+from flockmp.utils.errors import FunctionNotPickled
 from flockmp.utils import isIter, isValidFunc
-
-
-class Executor(Process):
-
-    def __init__(self, taskQueue, resultManager, databaseSetup, childPipe, progress):
-        super(Executor, self).__init__()
-        self.taskQueue = taskQueue
-        self.resultManager = resultManager
-        self.progressQueue = progress
-        self.databaseSetup = databaseSetup
-        self.childPipe = childPipe
-        self.SENTINEL = 1
-
-    def sendData(self, res):
-        while True:
-            try:
-                self.resultManager.append(res)
-                break
-            except ConnectionRefusedError as err:
-                sleep(0.2)  # no tight loops
-                continue
-        return
-
-    def run(self):
-        # setting up the environment
-        kwargs = {}
-
-        try:
-            if self.databaseSetup is not None:
-
-                if not isinstance(self.databaseSetup, list):
-                    self.databaseSetup = [self.databaseSetup]
-
-                for inst in self.databaseSetup:
-                    dbPar = inst.parameters
-                    parName = inst.name
-                    con = inst.server(**dbPar)
-                    if parName is not None:
-                        kwargs[parName] = con
-
-            flag = True
-            while True:
-                try:
-                    _function, args = self.taskQueue.get()
-
-                    if _function is None:
-                        flag = False
-                        break
-                    else:
-                        res = _function(*args, **kwargs)
-
-                    self.sendData(res)
-                except Exception as e:
-                    logger = FlockLogger()
-                    logger.error("Function failed! Line {} {} {}".format(sys.exc_info()[-1].tb_lineno, type(e).__name__, e))
-                finally:
-                    if (self.progressQueue is not None) and (flag is True):
-                        self.progressQueue.put(self.SENTINEL)
-        except Exception as e:
-            logger = FlockLogger()
-            logger.error("Worker failed! - {} - {}".format(type(e).__name__, e))
-
-        self.childPipe.send('Job done!')
-        return True
+from flockmp.core import Executor
 
 
 class DatabaseAsync(object):
@@ -78,6 +16,10 @@ class DatabaseAsync(object):
         self.numProcesses = numProcesses
         self.setups = setups
         self.checkProgress = checkProgress
+        self._numUsedProcess = None
+        self._outputSize = None
+        self._anyErrors = False
+
 
     def progressBar(self, queueProgress, queueSize):
         pbar = tqdm(total=queueSize)
@@ -107,12 +49,22 @@ class DatabaseAsync(object):
     def clear(self):
         os.system('cls' if os.name == "nt" else "clear")
 
+    def checkLength(self, managerList, iterLength):
+        while True:
+            try:
+                if len(managerList) == iterLength:
+                    return True
+                else:
+                    return False
+            except ConnectionRefusedError as err:
+                continue
+
     def apply(self, func, iterator):
         logger = FlockLogger()
 
         if not isValidFunc(func):
-            print("There is an error with your function. Look at the logging files.")
-            return
+            self._anyErrors = True
+            raise FunctionNotPickled
 
         tasks = Queue()
 
@@ -143,22 +95,16 @@ class DatabaseAsync(object):
             # finish progress bar queue
             progress.put(None)
 
-        if len(results) != len(iterator):
+        if not self.checkLength(results, len(iterator)):
+            self._anyErrors = True
             logger.error("The return list object does not have the same size as your input iterator.")
 
         # headshot remaining zombies
         for ex in executors:
             ex.terminate()
 
+        # logging some info after running the apply
+        self._outputSize = len(results)
+        self._numUsedProcess = listExSize
+
         return results
-
-
-def teste(val):
-    return val ** 2
-
-
-if __name__ == '__main__':
-    db = DatabaseAsync(checkProgress=True, numProcesses=200)
-    iterator = 10000 * [1, 2, 3, 4, 5, 6]
-    res = db.apply(teste, iterator)
-    print("final", len(res))
