@@ -1,3 +1,6 @@
+import sys
+from time import sleep
+from multiprocessing import Process
 from flockmp.utils.logger import FlockLogger
 
 
@@ -18,7 +21,7 @@ class Executor(Process):
                 self.resultManager.append(res)
                 break
             except ConnectionRefusedError as err:
-                sleep(0.2)  # no tight loops
+                sleep(0.3)  # no tight loops
                 continue
         return
 
