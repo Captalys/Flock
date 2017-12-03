@@ -1,9 +1,9 @@
 from flockmp.dataframe import DataFrameAsync
 from pandas import DataFrame
-import unittest
+import pytest
 
 
-class TestDataFrame(unittest.TestCase):
+class TestDataFrame(object):
 
     def funcHelper1(self, x):
         b = x ** 2
@@ -12,18 +12,10 @@ class TestDataFrame(unittest.TestCase):
     def testDataFrame(self):
         df = DataFrame({"a": list(range(1000)), "b": list(range(1000, 2000))})
         res = DataFrameAsync.apply(df, lambda x: x ** 2)
-        self.assertEqual(res.shape[0], 1000)
-        self.assertEqual(res.shape[1], 2)
+        assert res.shape[0] == 1000
+        assert res.shape[1] == 2
 
     def testDataFrameLambda(self):
         df = DataFrame({"a": list(range(1000)), "b": list(range(1000, 2000))})
         res = DataFrameAsync.apply(df, lambda v: ((v ** 2) / 20 * v) * v)
-        self.assertEqual(res.shape[0], 1000)
-
-
-def main():
-    unittest.main()
-
-
-if __name__ == "__main__":
-    main()
+        assert res.shape[0] == 1000

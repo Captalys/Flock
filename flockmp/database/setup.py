@@ -2,6 +2,10 @@ from abc import ABCMeta, abstractproperty
 
 
 class BaseDatabaseSetup(metaclass=ABCMeta):
+    """
+    :class:`BaseDatabaseSetup` used to enforce an interface to the user who desires to implement their own custom `DatabaseSetup`.
+
+    """
 
     @abstractproperty
     def name(self):
@@ -17,6 +21,10 @@ class BaseDatabaseSetup(metaclass=ABCMeta):
 
 
 class DatabaseSetup(object):
+    """
+    :class:`DatabaseSetup` used to build the connection that will be used inside your function in multiprocessing.
+
+    """
 
     def __init__(self, name=None, server=None, parameters=None):
         self.name = name

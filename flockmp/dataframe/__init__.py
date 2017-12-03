@@ -9,12 +9,13 @@ class DataFrameAsync(object):
     def applyInRows(cls, args):
         """
         :func:`Applyinrows` method takes a dataframe and the function to be applied at as arguments.
-        It stores every row of the dataframe in a list list.
+        It stores every row of the dataframe in a list.
+
         Through :func:`BaseMultiProc.executeAsync()` method, it processes the fuctions at each element of the list (row) in parallel calling different processes
 
         Returns a Dataframe by concating the processed rows.
 
-        :param tuple args: Function that will be applied at the Dataframe
+        :param tuple args: Function that will be applied at the Dataframe.
         """
         func, block_df = args
         _df2 = block_df.copy()
