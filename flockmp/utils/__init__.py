@@ -1,7 +1,7 @@
 from numpy import array_split
 from pandas import DataFrame
 from flockmp.utils.logger import FlockLogger
-from inspect import isfunction
+from inspect import isfunction, ismethod
 import dill
 
 
@@ -35,9 +35,15 @@ def isIter(value):
 
 def isValidFunc(function):
     test1 = dill.pickles(function)
-    test2 = isfunction(function)
 
-    if all([test1, test2]):
+    test2 = isfunction(function)
+    test3 = ismethod(function)
+
+    isFunc = False
+    if any([test2, test3]):
+        isFunc = True
+
+    if all([test1, isFunc]):
         return True
     else:
         logger = FlockLogger()
