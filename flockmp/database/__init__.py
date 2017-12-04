@@ -20,7 +20,6 @@ class DatabaseAsync(object):
         self._outputSize = None
         self._anyErrors = False
 
-
     def progressBar(self, queueProgress, queueSize):
         pbar = tqdm(total=queueSize)
         for _ in iter(queueProgress.get, None):
