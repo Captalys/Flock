@@ -20,7 +20,6 @@ class DatabaseAsync(object):
         self._outputSize = None
         self._anyErrors = False
 
-
     def progressBar(self, queueProgress, queueSize):
         pbar = tqdm(total=queueSize)
         for _ in iter(queueProgress.get, None):
@@ -103,8 +102,11 @@ class DatabaseAsync(object):
         for ex in executors:
             ex.terminate()
 
+        parentPipe.close()
+        childPipe.close()
+
         # logging some info after running the apply
         self._outputSize = len(results)
         self._numUsedProcess = listExSize
 
-        return results
+        return list(results)
